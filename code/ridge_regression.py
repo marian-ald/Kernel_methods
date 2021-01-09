@@ -37,8 +37,7 @@ class RidgeRegression():
         Y_pred = self.predict(self.X)
 
         # calculate gradients
-        dW = (- (2 * (self.X.T).dot(self.Y - Y_pred)) +
-              (2 * self.l2_penality * self.W)) / self.m
+        dW = (- (2 * (self.X.T).dot(self.Y - Y_pred)) + (2 * self.l2_penality * self.W)) / self.m
         db = - 2 * np.sum(self.Y - Y_pred) / self.m
 
         # update weights
@@ -50,7 +49,6 @@ class RidgeRegression():
     def predict(self, X):
         return X.dot(self.W) + self.b
 
-    # Driver code
 
 
 def main():
