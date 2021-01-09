@@ -1,0 +1,7 @@
+
+
+
+
+TODOs:
+-check for new methods to represent the data
+-fined new kernels
