@@ -14,9 +14,13 @@ class Models(object):
 
 
     def solve_linear_system(self, K, n, lam, y):
-        
-
-        # alpha = np.linalg.solve(A, b)
+        """
+            K = nxn size matrix
+            y = n size vector
+        """
+        I = np.identity(n)
+        mat_coef = K + n * lam * I
+        alpha = np.linalg.solve(mat_coef, y)
 
         return alpha
 
