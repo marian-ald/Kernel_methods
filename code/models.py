@@ -7,24 +7,20 @@ class Models(object):
     """
     def __init__(self):
         pass
-
-    def compute_K_matrix(self, train_data):
-
-        return K
     
     def gaussian_kernel(self,x1, x2, sigma = 0.01):
         return np.exp(-0.5 * np.linalg.norm(x1 - x2) ** 2 / np.square(sigma)) #/ (sigma * np.sqrt(2*np.pi))
 
-    def kernel_matrix(self, X):
-        X_count = X.shape[0]
 
-        K = np.zeros((X_count, X_count))
-        for i in range(X_count):
-            for j in range(X_count):
-                K[i,j] = self.gaussian_kernel(X[i], X[j], 0.1)
+    def kernel_matrix(self, X1, X2):
+        X1_count = X1.shape[0]
+        X2_count = X2.shape[0]
+
+        K = np.zeros((X1_count, X2_count))
+        for i in range(X1_count):
+            for j in range(X2_count):
+                K[i,j] = self.gaussian_kernel(X1[i], X2[j], 0.1)
         return K
-
-    
 
 
     def solve_linear_system(self, K, n, lam, y):
@@ -39,9 +35,9 @@ class Models(object):
         return alpha
 
 
-    def predict_labels(self, alpha, K_matrix, test_data):
-        k_matrix = self.compute_K_matrix(test_data);
-        return k_matrix * alpha
+    def predict_labels(self, alpha, K):
+
+        return np.dot(K, alpha)
 
 
     def rbf(x1, x2, gamma = None):

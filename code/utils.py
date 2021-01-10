@@ -92,3 +92,12 @@ class Utils:
         except IOError:
             print('File {} does not exist.'.format(file_path))
             sys.exit()
+    
+
+    def array_to_labels(self, elements):
+        """
+            For each element in the list:
+                if element > 0 => replace it with 1
+                if element < 0 => replace it with 0
+        """
+        return [0 if x < 0 else 1 for x in elements]
