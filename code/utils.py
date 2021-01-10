@@ -1,6 +1,7 @@
 import csv 
 import pandas as pd
 import pickle as pkl
+import sys
 
 
 data_folder = '../data/'
@@ -65,8 +66,7 @@ class Utils:
 
         for k in range(0,3):
             y_file = '{}Ytr{}.csv'.format(data_folder, k)
-            y_train_k = pd.read_csv(y_file, delimiter=r"\s+")
-            y_train_k = list(y_train_k.values)
+            y_train_k = self.read_raw_file(y_file)
 
             # Convert '0's into '1's
             y_train_k = [-1 if x == '0' else 1 for x in y_train_k]
