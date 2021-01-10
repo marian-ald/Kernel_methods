@@ -12,17 +12,16 @@ class Models(object):
 
         return K
     
-    def gaussian_kernel(self,x1, x2, sigma = 1.0):
-        return np.exp(-0.5 * np.linalg.norm(x1 - x2) ** 2 / np.square(sigma))
+    def gaussian_kernel(self,x1, x2, sigma = 0.01):
+        return np.exp(-0.5 * np.linalg.norm(x1 - x2) ** 2 / np.square(sigma)) #/ (sigma * np.sqrt(2*np.pi))
 
     def kernel_matrix(self, X):
         X_count = X.shape[0]
-        X_count = 5
 
         K = np.zeros((X_count, X_count))
         for i in range(X_count):
             for j in range(X_count):
-                K[i,j] = self.gaussian_kernel(X[i], X[j], 0.5)
+                K[i,j] = self.gaussian_kernel(X[i], X[j], 0.1)
         return K
 
     

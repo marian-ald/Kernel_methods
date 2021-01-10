@@ -1,5 +1,7 @@
 import csv 
 import pandas as pd
+import pickle as pkl
+
 
 data_folder = '../data/'
 
@@ -74,3 +76,19 @@ class Utils:
         
         return y_train
 
+
+    def save_object(self, obj, name):
+        file_path = '../data/kernel_mat/{}.pkl'.format(name)
+        with open(file_path, 'wb') as output:
+            pkl.dump(obj, output)
+
+
+    def load_object(self, name):
+        file_path = '../data/kernel_mat/{}.pkl'.format(name)
+        try:
+            with open(file_path, 'rb') as pkl_file:
+                read_obj = pkl.load(pkl_file)
+                return read_obj    
+        except IOError:
+            print('File {} does not exist.'.format(file_path))
+            sys.exit()
