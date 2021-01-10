@@ -1,5 +1,6 @@
 from utils import *
 from models import *
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -11,3 +12,12 @@ if __name__ == '__main__':
 
 
     m = Models()
+
+    x = np.array(x)
+    
+    print(x[0])
+    
+    print('Gaussian kernel')    
+    print(m.gaussian_kernel(x[0], x[0]))
+    print(m.kernel_matrix(x))
+
