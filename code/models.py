@@ -1,5 +1,6 @@
 import numpy as np
-
+from functools import partial
+from utils import *
 
 class Models(object):
     """
@@ -8,18 +9,18 @@ class Models(object):
     def __init__(self):
         pass
     
-    def gaussian_kernel(self,x1, x2, sigma = 0.01):
+    def gaussian_kernel(self, sigma, x1, x2):
         return np.exp(-0.5 * np.linalg.norm(x1 - x2) ** 2 / np.square(sigma)) #/ (sigma * np.sqrt(2*np.pi))
 
 
-    def kernel_matrix(self, X1, X2):
+    def kernel_matrix(self, X1, X2, kernel):
         X1_count = X1.shape[0]
         X2_count = X2.shape[0]
 
         K = np.zeros((X1_count, X2_count))
         for i in range(X1_count):
             for j in range(X2_count):
-                K[i,j] = self.gaussian_kernel(X1[i], X2[j], 0.1)
+                K[i,j] = kernel(X1[i], X2[j])
         return K
 
 
@@ -40,6 +41,67 @@ class Models(object):
         return np.dot(K, alpha)
 
 
+    def train_folds(self, data, labels, folds):
+        """
+        docstring
+        """
+
+        len_data = len(data)
+        data = np.array(list(zip(data, labels)))
+        len_fold = int(len(data) / folds)
+
+        sigma_values = [0.001, 0.01, 0.05, 0.1, 1]
+        accuracy_values = []
+
+        for sigma in sigma_values:
+            # Build a partial gaussian function with the current 'sigma' value
+            kernel_func = partial(self.gaussian_kernel, sigma)
+            print('Processing sigma value={}'.format(sigma))
+
+            fold_accuracy = 0
+            for i in range(folds):
+                print('Fold: {}'.format(i))
+                # Training data is obtained by concatenating the 2 subsets: at the right + at the left
+                # of the current fold
+                train_data = [*data[0:i*len_fold], *data[(i+1)*len_fold:len_data]]
+
+                # The current fold is used to test the model
+                test_data = [*data[i*len_fold:(i+1)*len_fold]]
+                
+                x_train = np.array([x[0] for x in train_data])
+                y_train = np.array([x[1] for x in train_data])
+
+                x_test = np.array([x[0] for x in test_data])
+                y_test = np.array([x[1] for x in test_data])
+
+                # Build the Gram matrix
+                gram_matrix = self.kernel_matrix(x_train, x_train, kernel_func)
+
+                # Solve the linear system in order to find the vector weights
+                alpha = self.solve_linear_system(gram_matrix, len(x_train), 1, y_train)
+                alpha = alpha.reshape(len(x_train),1)
+
+                # Build the Gram matrix for the test data
+                gram_mat_test = self.kernel_matrix(x_train, x_test, kernel_func)
+
+                # Compute predictions over the test data
+                pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
+
+                # Convert predictions to labels
+                pred = array_to_labels(pred)
+
+                fold_accuracy += accuracy_score(pred, y_test)
+            
+            # Compute average accuracy for all folds
+            average_accuracy = fold_accuracy / folds
+            accuracy_values.append(average_accuracy)
+
+        
+        print('For the sigma values: {}'.format(sigma_values))
+        print('Accuracies: {}'.format(accuracy_values))
+
+
+"""
     def rbf(x1, x2, gamma = None):
         '''
         RBF: Radial basis function or guassian kernel
@@ -59,7 +121,4 @@ class Models(object):
             return np.exp(-gamma * np.linalg.norm(x1 - x2, axis = 1)**2)
         elif x1.ndim > 1 and x2.ndim > 1:
             return np.exp(-gamma * np.linalg.norm(x1[:, np.newaxis] - x2[np.newaxis, :], axis = 2)**2)
-
-
-    def KRR(self, x_tr, x_te, y_tr, y_te):
-        pass
+"""
