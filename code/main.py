@@ -19,7 +19,7 @@ if __name__ == '__main__':
     random.shuffle(y_train)
 
     # x_train = x_train[:9]
-    # y_train = y[:9]
+    # y_train = y_train[:9]
     m.train_folds(x_train, y_train, 6)
 
     sys.exit()
