@@ -1,6 +1,8 @@
 import numpy as np
 from functools import partial
 from utils import *
+import itertools as it
+
 
 class Models(object):
     """
@@ -25,7 +27,22 @@ class Models(object):
         return np.exp(-gamma * np.linalg.norm(x1[:, np.newaxis] - x2[np.newaxis, :], axis = 2)**2)
 
 
-    def kernel_matrix(self, X1, X2, kernel):
+    def kernel_matrix_training(self, X, kernel):
+        """ 
+            Compute the kernel matrix for the training data.
+        """
+        X_count = len(X)
+
+        K = np.zeros((X_count, X_count))
+        for i in range(X_count):
+            K[i,i] = kernel(X[i], X[i])
+
+        for i, j in it.combinations(range(X_count), 2):
+            K[i,j] = K[j,i] = kernel(X[i], X[j])
+        return K
+
+
+    def kernel_matrix_test(self, X1, X2, kernel):
         X1_count = X1.shape[0]
         X2_count = X2.shape[0]
 
@@ -62,8 +79,8 @@ class Models(object):
         data = np.array(list(zip(data, labels)))
         len_fold = int(len(data) / folds)
 
-        lambda_values = [0.5, 1.5, 5, 10]
-        sigma_values = [0.001, 0.01, 0.05, 0.1, 1]
+        lambda_values = [0.5, 0.9]
+        sigma_values = [0.5]
 
         for lam in lambda_values:
             accuracy_values = []
@@ -89,14 +106,14 @@ class Models(object):
                     y_test = np.array([x[1] for x in test_data])
 
                     # Build the Gram matrix
-                    gram_matrix = self.kernel_matrix(x_train, x_train, kernel_func)
+                    gram_matrix = self.kernel_matrix_training(x_train, kernel_func)
 
                     # Solve the linear system in order to find the vector weights
                     alpha = self.solve_linear_system(gram_matrix, len(x_train), lam, y_train)
                     alpha = alpha.reshape(len(x_train),1)
 
                     # Build the Gram matrix for the test data
-                    gram_mat_test = self.kernel_matrix(x_train, x_test, kernel_func)
+                    gram_mat_test = self.kernel_matrix_test(x_train, x_test, kernel_func)
 
                     # Compute predictions over the test data
                     pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
