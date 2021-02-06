@@ -12,7 +12,30 @@ class Models(object):
         pass
     
     def gaussian_kernel(self, sigma, x1, x2):
-        return np.exp(-0.5 * np.linalg.norm(x1 - x2) ** 2 / np.square(sigma)) #/ (sigma * np.sqrt(2*np.pi))
+        return np.exp(-0.5 * (np.linalg.norm(x1 - x2) ** 2) / sigma**2) #/ (sigma * np.sqrt(2*np.pi))
+
+
+    def miss(self, s, t):
+        """ Count the number of mismatches between two strings."""
+        return sum((si != sj for si, sj in zip(s, t)))
+
+
+    def mismatch_kernel(self, k, delta, m, gamma, s, t):
+        """ String kernel with displacement, mismatches and exponential decay. """
+        L = len(s)
+        return sum(((np.exp(-gamma * d**2) \
+                    * np.exp(-gamma * self.miss(s[i:i + k], t[d + i:d + i + k])) \
+                    * (self.miss(s[i:i + k], t[d + i:d + i + k]) <= m) 
+                    for i, d in it.product(range(L - k + 1), range(-delta, delta + 1))
+                    if i + d + k <= L and i + d >= 0)))
+
+
+    def poly_kernel(self, power, x1, x2):
+        """
+        polynominal function
+        k(x1,x2) = (1+x1 * x2) ^i
+        """
+        return pow((1 + np.dot(x1, x2)), power)
 
 
     def rbf_kernel(self, x1, x2, gamma = 1):
@@ -45,7 +68,7 @@ class Models(object):
     def kernel_matrix_test(self, X1, X2, kernel):
         X1_count = X1.shape[0]
         X2_count = X2.shape[0]
-
+        
         K = np.zeros((X1_count, X2_count))
         for i in range(X1_count):
             for j in range(X2_count):
@@ -130,3 +153,13 @@ class Models(object):
             print('lambda={}'.format(lam))
             print('For the sigma values: {}'.format(sigma_values))
             print('Accuracies: {}'.format(accuracy_values))
+
+
+    def run_and_save_kernels(self, train):
+
+        kernel_mat = self.kernel_matrix_training(train, partial(self.mismatch_kernel, 8, 1, 1, 1))
+        save_object(kernel_mat, 'mismatch_k=8_delta=1_m=1_gamma=1')
+
+        kernel_mat = self.kernel_matrix_training(train, partial(self.mismatch_kernel, 7, 1, 1, 1))
+        save_object(kernel_mat, 'mismatch_k=7_delta=1_m=1_gamma=1')
+
