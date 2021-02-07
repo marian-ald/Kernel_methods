@@ -106,11 +106,8 @@ class Models(object):
         K = np.zeros((X_count, X_count))
         for i in range(X_count):
             K[i,i] = kernel(X[i], X[i])
-        i=0
+
         for i, j in it.combinations(range(X_count), 2):
-            if i % 500000 == 0:
-                print('compute kernel step {}'.format(i))
-            i+=1
             K[i,j] = K[j,i] = kernel(X[i], X[j])
         return K
 

@@ -179,19 +179,11 @@ def build_kmers_dict(sequences, k):
     conv = Converter(k)
     kmer_dict = {}
 
-    # i = 0
     for seq in sequences:
-        # if i % 500 == 0:
-        #     print(i)
+        # Add each new kmer in the dictionary
         for kmer in conv.all_kmers_as_ints(seq):
             kmer_dict[kmer] = 0
-        # i+=1
-    # i=0
-    # for k in kmer_dict:
-    #     i+=1
-    #     print(k)
-    #     if i == 5:
-    #         sys.exit()
+
     # Save the dictionary in pickle format
     save_object(kmer_dict, 'kmer_dict_k={}'.format(k))
 

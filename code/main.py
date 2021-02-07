@@ -26,6 +26,7 @@ if __name__ == '__main__':
 
     # build_kmers_dict(x_train, 7)
     K_spectrum = m.spectrum_kernel(x_train, 7)
+    
     print(K_spectrum)
 
 
