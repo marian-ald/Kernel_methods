@@ -50,6 +50,53 @@ class Models(object):
         return np.exp(-gamma * np.linalg.norm(x1[:, np.newaxis] - x2[np.newaxis, :], axis = 2)**2)
 
 
+
+    def spectrum_histogram(self, X, k):
+        # Build the kmers dictionary for the training sequences
+        kmer_dict = build_kmers_dict(X, k)
+
+        # Or load the kmers dictionary if computed before
+        # kmer_dict = load_object('kmer_dict_k={}'.format(k))
+
+        conv = Converter(k)
+
+        # List which stores the kmers frequencies for each sequence
+        histogram_X = []
+
+        i = 0
+        for seq in X:
+            if i % 500 == 0:
+                print('compute histogram step {}'.format(i))
+            i+=1
+            # Set all values in the dictionary to 0
+            kmer_dict = dict.fromkeys(kmer_dict, 0)
+
+            # For each kmer in the current seq, increment its occurence nb in the frequency dictionary
+            for kmer in conv.all_kmers_as_ints(seq):
+                kmer_dict[kmer] += 1
+
+            # Get a snapshot of the kmer_dic and insert as a list of kmer frequencies in the histogram
+            histogram_X.append(list(kmer_dict.values()))
+
+        save_object(histogram_X, 'spectrum_histogram_k={}_Xdim={}'.format(k, len(X)))
+        return histogram_X
+
+
+    def spectrum_kernel(self, X, k):
+        histograms_X = []
+
+        if len(X) == 0:
+            histograms_X = load_object( 'spectrum_histogram_k={}_Xdim={}'.format(k, len(X)))
+        else:
+            print('Computing the spectrum histogram')
+            histograms_X = self.spectrum_histogram(X, k)
+
+
+        K = self.kernel_matrix_training(histograms_X, partial(np.dot))
+        save_object(K, 'spectrum_kernel_k={}_Xdim={}'.format(k, len(X)))
+
+        return K
+
     def kernel_matrix_training(self, X, kernel):
         """ 
             Compute the kernel matrix for the training data.
@@ -59,8 +106,11 @@ class Models(object):
         K = np.zeros((X_count, X_count))
         for i in range(X_count):
             K[i,i] = kernel(X[i], X[i])
-
+        i=0
         for i, j in it.combinations(range(X_count), 2):
+            if i % 500000 == 0:
+                print('compute kernel step {}'.format(i))
+            i+=1
             K[i,j] = K[j,i] = kernel(X[i], X[j])
         return K
 

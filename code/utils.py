@@ -4,9 +4,56 @@ import pickle as pkl
 import sys
 from random import seed
 from random import randrange
-
+from functools import reduce
 
 data_folder = '../data/'
+
+letterCodes = { "A" : 0, "C" : 1, "G" : 2, "T": 3}
+letters = ["A", "C", "G", "T"]
+
+class Converter:
+    """Utility class to encode kmers as integers and vice versa
+
+    Each letter in a kmer of length k is encoded as two bits as follows
+    "A" : 0, "C" : 1, "G" : 2, "T": 3
+    A string of lenght k is represented as an int with at least k bits. 
+    The most significant bits (position 2*k and 2*k-1 from the right) encode the first letter,
+    the subsequent two bits the second letter and so on.
+    """
+    def __init__(self, k):
+        self.k = k
+        self.mask = 4**k - 1
+
+    def _processNextLetter(self, acc, c):
+        #shift int representation 2 bits to the right
+        #truncate highest 2 bits
+        #encode current letter in the lowest two bits
+        return (acc << 2) & self.mask | letterCodes[c]
+
+    def kmer2int(self, kmer):
+        return reduce(self._processNextLetter, kmer, 0)
+
+    def int2kmer(self, intRepr):
+        return "".join(letters[(intRepr >> (2 * i)) & 3] for i in range(self.k - 1, -1, -1))
+
+    def all_kmers_as_ints(self, read):
+        """Encodes all kmers of length k in a read as integers
+        
+        Example for k = 2: "ACGT" would be result [01, 12, 23] (the numbers are written in base 4).
+        Returns a lazy evaluated iterator.
+        """
+
+        first_int = self.kmer2int(read[i] for i in range(self.k))  #representation of the first k letters
+        return scanl(self._processNextLetter, first_int, (read[i] for i in range(self.k, len(read))))  
+
+
+#Similar to Haskell's scanl
+def scanl(f, z, xs):
+    yield z
+    for x in xs:
+        z = f(z, x)
+        yield z
+
 
 def read_raw_file(file_name):
     """
@@ -122,3 +169,30 @@ def accuracy_score(predicted, expected):
         if predicted[i] == expected[i]:
             count += 1
     return count / len(predicted)
+
+
+def build_kmers_dict(sequences, k):
+    """
+        Function which build a dictionary with all the substrings of length k for
+        each entry in the list of sequences
+    """
+    conv = Converter(k)
+    kmer_dict = {}
+
+    # i = 0
+    for seq in sequences:
+        # if i % 500 == 0:
+        #     print(i)
+        for kmer in conv.all_kmers_as_ints(seq):
+            kmer_dict[kmer] = 0
+        # i+=1
+    # i=0
+    # for k in kmer_dict:
+    #     i+=1
+    #     print(k)
+    #     if i == 5:
+    #         sys.exit()
+    # Save the dictionary in pickle format
+    save_object(kmer_dict, 'kmer_dict_k={}'.format(k))
+
+    return kmer_dict

@@ -21,7 +21,13 @@ if __name__ == '__main__':
 
     # kernel_mat = m.kernel_matrix_training(x_train, partial(m.gaussian_kernel, 0.01))
     # kernel_mat = m.kernel_matrix_training(x_train, partial(m.mismatch_kernel, 8, 1, 1, 1))
-    m.run_and_save_kernels(x_train)
+    # m.run_and_save_kernels(x_train)
+    # x_train = x_train[:5]
+
+    # build_kmers_dict(x_train, 7)
+    K_spectrum = m.spectrum_kernel(x_train, 7)
+    print(K_spectrum)
+
 
     sys.exit()
 
