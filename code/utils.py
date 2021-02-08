@@ -143,7 +143,7 @@ def array_to_labels(elements):
             if element > 0 => replace it with 1
             if element < 0 => replace it with 0
     """
-    return [0 if x < 0 else 1 for x in elements]
+    return [-1 if x < 0 else 1 for x in elements]
 
 
 def k_fold_split(data, folds=4):
