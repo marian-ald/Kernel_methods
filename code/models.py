@@ -148,8 +148,8 @@ class Models(object):
         data = np.array(list(zip(data, labels)))
         len_fold = int(len(data) / folds)
 
-        lambda_values = [0.5, 0.9]
-        sigma_values = [0.5]
+        lambda_values = [0.1, 0.3, 0.6, 0.9]
+        sigma_values = [0.0001, 0.001, 0.01, 0.1, 0.5]
 
         for lam in lambda_values:
             accuracy_values = []
@@ -163,7 +163,7 @@ class Models(object):
 
                 fold_accuracy = 0
                 for i in range(folds):
-                    print('Fold: {}'.format(i))
+                    # print('Fold: {}'.format(i))
                     # Training data is obtained by concatenating the 2 subsets: at the right + at the left
                     # of the current fold
                     train_data = [*data[0:i*len_fold], *data[(i+1)*len_fold:len_data]]
@@ -201,7 +201,7 @@ class Models(object):
 
             print('lambda={}'.format(lam))
             print('For the sigma values: {}'.format(sigma_values))
-            print('Accuracies: {}'.format(accuracy_values))
+            print('Accuracies: {}\n'.format(accuracy_values))
 
 
     def run_and_save_kernels(self, train):

@@ -10,6 +10,16 @@ import math
 if __name__ == '__main__':
 
     m = Models()
+    # Variable to indicate which dataset distribution to use
+    distribution = -1
+
+    # Check if a certain dataset is selected, if no argument is provided, all 3
+    # will be processed
+    if len(sys.argv) > 1:
+        if not(sys.argv[1] == '0' or sys.argv[1] == '1' or sys.argv[1] == '2'):
+            sys.exit('Error: Expected arguments:0/1/2')
+        distribution = int(sys.argv[1])
+        print('Processing distribution: {}'.format(distribution))
 
     # Each of the following lists contains 3 elements:
     # An element is a list which incorporate data for a single distribution
@@ -17,6 +27,13 @@ if __name__ == '__main__':
     x_train = np.array(read_x_data(train=True, raw=False))
     y_train = np.array(read_y_data())
     x_test = np.array(read_x_data(train=False, raw=False))
+
+    if distribution != -1:
+        m.train_folds(x_train[distribution], y_train[distribution], 5)
+    else:
+        for i in range(3):
+            m.train_folds(x_train[i], y_train[i], 5)
+
 
     # random.seed(2)
     # random.shuffle(x_train)
@@ -33,7 +50,7 @@ if __name__ == '__main__':
     # K_spectrum = m.spectrum_kernel(x_train, 7)
 
 
-    # sys.exit()
+    sys.exit()
 
     y_train = y_train[:1000]
     x_train = x_train[:1000]
