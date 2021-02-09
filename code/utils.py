@@ -175,7 +175,7 @@ def accuracy_score(predicted, expected):
     return count / len(predicted)
 
 
-def build_kmers_dict(sequences, k):
+def build_kmers_dict(sequences, k, distribution):
     """
         Function which build a dictionary with all the substrings of length k for
         each entry in the list of sequences
@@ -189,7 +189,7 @@ def build_kmers_dict(sequences, k):
             kmer_dict[kmer] = 0
 
     # Save the dictionary in pickle format
-    save_object(kmer_dict, 'kmer_dict_k={}'.format(k))
+    # save_object(kmer_dict, 'kmer_dict_distribution={}_k={}'.format(distribution, k))
 
     return kmer_dict
 

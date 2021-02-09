@@ -24,38 +24,30 @@ if __name__ == '__main__':
     # Each of the following lists contains 3 elements:
     # An element is a list which incorporate data for a single distribution
     # E.g. x_train = [train0, train1, train2]
-    x_train = np.array(read_x_data(train=True, raw=False))
+    x_train = np.array(read_x_data(train=True, raw=True))
     y_train = np.array(read_y_data())
-    x_test = np.array(read_x_data(train=False, raw=False))
+    x_test = np.array(read_x_data(train=False, raw=True))
 
 
-    # y_train = y_train[0][:1000]
-    # x_train = x_train[0][:1000]
+    y_train = y_train[0][:100]
+    x_train = x_train[0][:100]
 
 
-    # x_test = x_train[700:]
-    # x_train = x_train[:700]
-    # y_test = y_train[700:]
-    # y_train = y_train[:700]
+    x_test = x_train[70:]
+    x_train = x_train[:70]
+    y_test = y_train[70:]
+    y_train = y_train[:70]
 
-    # print(x_test[0])
-    # print(x_train[0])
 
-    test_labels = []
-    for i in range(3):
-        # Compute alpha coefficients using the training set
-        alpha = m.compute_alpha_KRR(x_train[i], y_train[i], 0.001, 0.1, i)
-        
-        # Define the gaussian kernel
-        kernel = partial(m.gaussian_kernel, 0.1)
-        
-        # Predict the labels over the test set
-        labels = m.do_predictions(x_train[i], y_train[i], x_test[i], alpha, kernel)
-        test_labels = test_labels + labels
 
-    write_labels_csv(test_labels)
+    # Run the KRR using gaussian kernel
+    # m.run_KRR(x_train, y_train, x_test)
+
+    for i in range(1):
+        K_spectrum = m.spectrum_matrix(x_train, 7, i)
 
     sys.exit()
+
 
     if distribution != -1:
         m.train_folds(x_train[distribution], y_train[distribution], 5)
@@ -70,13 +62,6 @@ if __name__ == '__main__':
     # random.shuffle(y_train)
 
 
-    # kernel_mat = m.kernel_matrix_training(x_train, partial(m.gaussian_kernel, 0.01))
-    # kernel_mat = m.kernel_matrix_training(x_train, partial(m.mismatch_kernel, 8, 1, 1, 1))
-    # m.run_and_save_kernels(x_train)
-
-    # build_kmers_dict(x_train, 7)
-
-    # K_spectrum = m.spectrum_kernel(x_train, 7)
 
 
 

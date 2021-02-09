@@ -3,7 +3,9 @@ Results:
 
 __________________________________KRR- cross validation__________________________________
 
-_____________Find lambda and sigma
+
+Gaussian Kernel
+Find lambda and sigma
 
 Processing distribution: 0
 lambda=0.0001

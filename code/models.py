@@ -51,9 +51,9 @@ class Models(object):
 
 
 
-    def spectrum_histogram(self, X, k):
+    def spectrum_histogram(self, X, k, distribution):
         # Build the kmers dictionary for the training sequences
-        kmer_dict = build_kmers_dict(X, k)
+        kmer_dict = build_kmers_dict(X, k, distribution)
 
         # Or load the kmers dictionary if computed before
         # kmer_dict = load_object('kmer_dict_k={}'.format(k))
@@ -63,11 +63,7 @@ class Models(object):
         # List which stores the kmers frequencies for each sequence
         histogram_X = []
 
-        i = 0
         for seq in X:
-            if i % 500 == 0:
-                print('compute histogram step {}'.format(i))
-            i+=1
             # Set all values in the dictionary to 0
             kmer_dict = dict.fromkeys(kmer_dict, 0)
 
@@ -78,24 +74,28 @@ class Models(object):
             # Get a snapshot of the kmer_dic and insert as a list of kmer frequencies in the histogram
             histogram_X.append(list(kmer_dict.values()))
 
-        save_object(histogram_X, 'spectrum_histogram_k={}_Xdim={}'.format(k, len(X)))
+        save_object(histogram_X, 'spectrum_histogram_distrib={}_k={}'.format(distribution, k))
         return histogram_X
 
 
-    def spectrum_kernel(self, X, k):
+    def spectrum_matrix(self, X, k, distribution):
+        """
+            Compute the spectrum kernel for a list of sequences X.
+            X can be omitted(with []) if the spectrum histogram was computed before
+        """
         histograms_X = []
 
         if len(X) == 0:
-            histograms_X = load_object( 'spectrum_histogram_k={}_Xdim={}'.format(k, len(X)))
+            histograms_X = load_object('spectrum_histogram_distrib={}_k={}'.format(distribution, k))
         else:
             print('Computing the spectrum histogram')
-            histograms_X = self.spectrum_histogram(X, k)
-
+            histograms_X = self.spectrum_histogram(X, k, distribution)
 
         K = self.kernel_matrix_training(histograms_X, partial(np.dot))
-        save_object(K, 'spectrum_kernel_k={}_Xdim={}'.format(k, len(X)))
 
+        save_object(K, 'spectrum_kernel_distribution={}_k={}'.format(distribution, k))
         return K
+
 
     def kernel_matrix_training(self, X, kernel):
         """ 
@@ -152,6 +152,22 @@ class Models(object):
         save_object(alpha, 'alpha_velues_sigma={}_lambda={}_distrib={}'.format(sigma, lam, distrib))
 
         return alpha
+
+
+    def run_KRR(self, x_train, y_train, x_test):
+        test_labels = []
+        for i in range(3):
+            # Compute alpha coefficients using the training set
+            alpha = m.compute_alpha_KRR(x_train[i], y_train[i], 0.001, 0.1, i)
+            
+            # Define the gaussian kernel
+            kernel = partial(m.gaussian_kernel, 0.1)
+            
+            # Predict the labels over the test set
+            labels = m.do_predictions(x_train[i], y_train[i], x_test[i], alpha, kernel)
+            test_labels = test_labels + labels
+
+            write_labels_csv(test_labels)
 
 
     def do_predictions(self, train_x, train_y, test_x, alpha, kernel):
