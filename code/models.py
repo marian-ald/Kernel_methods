@@ -139,6 +139,31 @@ class Models(object):
         return np.dot(K, alpha)
 
 
+    def compute_alpha_KRR(self, train_x, train_y, lam, sigma, distrib):
+        kernel = partial(self.gaussian_kernel, sigma)
+
+        # Compute training Gram matrix
+        K_train = self.kernel_matrix_training(train_x, kernel)
+
+        # Solve the linear system in order to find the vector weights
+        alpha = self.solve_linear_system(K_train, len(train_x), lam, train_y)
+        alpha = alpha.reshape(len(train_x), 1)
+
+        save_object(alpha, 'alpha_velues_sigma={}_lambda={}_distrib={}'.format(sigma, lam, distrib))
+
+        return alpha
+
+
+    def do_predictions(self, train_x, train_y, test_x, alpha, kernel):
+
+        # Compute test Gram matrix
+        K_test = self.kernel_matrix_test(train_x, test_x, kernel)
+        labels = self.predict_labels(alpha, np.matrix.transpose(K_test))
+
+        labels = array_to_labels(labels, 0)
+        return labels
+
+
     def train_folds(self, data, labels, folds):
         """
         docstring
@@ -191,7 +216,7 @@ class Models(object):
                     pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
 
                     # Convert predictions to labels
-                    pred = array_to_labels(pred)
+                    pred = array_to_labels(pred, -1)
 
                     fold_accuracy += accuracy_score(pred, y_test)
                 

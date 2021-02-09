@@ -137,13 +137,17 @@ def load_object(name):
         sys.exit()
 
 
-def array_to_labels(elements):
+def array_to_labels(elements, negative_label=0):
     """
         For each element in the list:
             if element > 0 => replace it with 1
-            if element < 0 => replace it with 0
+            if element < 0 => replace it with 0 OR -1, depending on the 'negative_label'
+        
+        negative_label is 0 in the original training data
+                          -1 when used in the algortihms
     """
-    return [-1 if x < 0 else 1 for x in elements]
+
+    return [negative_label if x < 0 else 1 for x in elements]
 
 
 def k_fold_split(data, folds=4):
@@ -188,3 +192,23 @@ def build_kmers_dict(sequences, k):
     save_object(kmer_dict, 'kmer_dict_k={}'.format(k))
 
     return kmer_dict
+
+
+def write_labels_csv(labels):
+    fields = ['Id', 'Bound']
+    filename = 'test_results.csv'
+
+    rows = []
+
+    for i in range(len(labels)):
+        rows.append([i, labels[i]])
+
+    with open(filename, 'w') as csvfile:  
+        # creating a csv writer object  
+        csvwriter = csv.writer(csvfile)  
+
+        # writing the fields  
+        csvwriter.writerow(fields)  
+
+        # writing the data rows  
+        csvwriter.writerows(rows)

@@ -28,6 +28,30 @@ if __name__ == '__main__':
     y_train = np.array(read_y_data())
     x_test = np.array(read_x_data(train=False, raw=False))
 
+
+    # y_train = y_train[0][:1000]
+    # x_train = x_train[0][:1000]
+
+
+    # x_test = x_train[700:]
+    # x_train = x_train[:700]
+    # y_test = y_train[700:]
+    # y_train = y_train[:700]
+
+    # print(x_test[0])
+    # print(x_train[0])
+
+    test_labels = []
+    for i in range(3):
+        alpha = m.compute_alpha_KRR(x_train[i], y_train[i], 0.001, 0.1, i)
+        kernel = partial(m.gaussian_kernel, 0.1)
+        labels = m.do_predictions(x_train[i], y_train[i], x_test[i], alpha, kernel)
+        test_labels = test_labels + labels
+
+    write_labels_csv(test_labels)
+
+    sys.exit()
+
     if distribution != -1:
         m.train_folds(x_train[distribution], y_train[distribution], 5)
     else:
@@ -49,19 +73,6 @@ if __name__ == '__main__':
 
     # K_spectrum = m.spectrum_kernel(x_train, 7)
 
-
-    sys.exit()
-
-    y_train = y_train[:1000]
-    x_train = x_train[:1000]
-
-    # y_train = y_train[2000:4000]
-    # x_train = x_train[2000:4000]
-
-    x_test = x_train[700:]
-    x_train = x_train[:700]
-    y_test = y_train[700:]
-    y_train = y_train[:700]
 
 
 
@@ -112,7 +123,7 @@ if __name__ == '__main__':
     pred = m.predict_labels(alpha, np.matrix.transpose(test_kernel_matrix))
     print(pred[:20])
 
-    pred = array_to_labels(pred)
+    pred = array_to_labels(pred, -1)
 
     print(pred[:20])
     print(y_train[:20])

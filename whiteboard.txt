@@ -1,38 +1,97 @@
 
-
-
-TODOs:
--implement logistic regression
--implement SVM
--check for new methods to represent the data
--find new kernels(RBF)
-
-Ideas:
-Represent the data as:
-A: 0001
-C: 0010
-T: 0100
-G: 1000
-
-OR
-
-A: [-1,1]
-T: [1,-1]
-C: [-1,-1]
-G: [1, 1]
-
-OR
-
-Kmers
-
-
-
-
 Results:
 
-Lambda = 1
-sigma =     [0.001,              0.01,   0.05,                0.1,                 1]
-Accuracies: [0.3398333333333334, 0.2595, 0.39266666666666666, 0.49266666666666664, 0.5026666666666667]
+__________________________________KRR- cross validation__________________________________
+
+_____________Find lambda and sigma
+
+Processing distribution: 0
+lambda=0.0001
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5015000000000001, 0.5015000000000001, 0.5405, 0.5625, 0.5655]
+
+lambda=0.001
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5015000000000001, 0.5015000000000001, 0.5405, 0.5815, 0.5515000000000001]
+
+lambda=0.01
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5015000000000001, 0.5015000000000001, 0.5405, 0.5635, 0.5305000000000001]
+
+lambda=0.1
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.501501, 0.501501, 0.541, 0.5445, 0.487]
+
+lambda=0.3
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.501501, 0.501501, 0.541, 0.529001, 0.4845]
+
+lambda=0.6
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.501501, 0.501501, 0.541, 0.5245, 0.484]
+
+lambda=0.9
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.501501, 0.501501, 0.541, 0.526, 0.4805]
 
 
 
+Processing distribution: 1
+lambda=0.0001
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5075000000000001, 0.5075000000000001, 0.6035, 0.6705000000000001, 0.6759999999999999]
+
+lambda=0.001
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5075000000000001, 0.5075000000000001, 0.6035, 0.6855, 0.6665]
+
+lambda=0.01
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5075000000000001, 0.5075000000000001, 0.6035, 0.6705, 0.6605000000000001]
+
+lambda=0.1
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.507501, 0.507501, 0.6035, 0.658, 0.56549]
+
+lambda=0.3
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.507501, 0.507501, 0.6035, 0.644501, 0.5255]
+
+lambda=0.6
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.507501, 0.507501, 0.6035, 0.640501, 0.517]
+
+lambda=0.9
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.507501, 0.507501, 0.6035, 0.637, 0.51348]
+
+
+
+Processing distribution: 2
+lambda=0.0001
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.6075000000000002, 0.6765000000000001, 0.6575]
+
+lambda=0.001
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.6075000000000002, 0.6789999999999999, 0.659]
+
+lambda=0.01
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.6075000000000002, 0.6664999999999999, 0.6459999999999999]
+
+lambda=0.1
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.607502, 0.6525, 0.547]
+
+lambda=0.3
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.607502, 0.65, 0.4980005]
+
+lambda=0.6
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.607502, 0.6405, 0.4944]
+
+lambda=0.9
+For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
+Accuracies: [0.5, 0.507, 0.607502, 0.640501, 0.4945005]
