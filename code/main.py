@@ -43,8 +43,13 @@ if __name__ == '__main__':
 
     test_labels = []
     for i in range(3):
+        # Compute alpha coefficients using the training set
         alpha = m.compute_alpha_KRR(x_train[i], y_train[i], 0.001, 0.1, i)
+        
+        # Define the gaussian kernel
         kernel = partial(m.gaussian_kernel, 0.1)
+        
+        # Predict the labels over the test set
         labels = m.do_predictions(x_train[i], y_train[i], x_test[i], alpha, kernel)
         test_labels = test_labels + labels
 
