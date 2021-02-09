@@ -95,7 +95,7 @@ def read_x_data(train=True, raw=True):
         else:
             x_data_k = read_raw_file(x_file_name)
 
-        x_data = x_data+x_data_k
+        x_data.append(x_data_k)
     return x_data
 
 
@@ -105,7 +105,7 @@ def read_y_data():
         Keep '1' as 1
         Transform '0' in -1
     """
-    y_train = []
+    y_train = list([])
 
     for k in range(0,3):
         y_file = '{}Ytr{}.csv'.format(data_folder, k)
@@ -115,7 +115,7 @@ def read_y_data():
         y_train_k = [-1 if x == '0' else 1 for x in y_train_k]
 
         # Append the content of the current file to 'y_train'
-        y_train.extend(y_train_k)
+        y_train.append(y_train_k)
     
     return y_train
 

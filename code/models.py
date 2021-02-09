@@ -136,7 +136,6 @@ class Models(object):
 
 
     def predict_labels(self, alpha, K):
-
         return np.dot(K, alpha)
 
 
@@ -158,6 +157,9 @@ class Models(object):
                 # Build a partial gaussian function with the current 'sigma' value
                 kernel_func = partial(self.gaussian_kernel, sigma)
                 print('Processing sigma value={}'.format(sigma))
+
+                # TODO Compute the whole gram matrix here only once
+                # each fold will extract
 
                 fold_accuracy = 0
                 for i in range(folds):
