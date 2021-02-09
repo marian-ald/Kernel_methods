@@ -1,76 +1,190 @@
 import csv 
 import pandas as pd
+import pickle as pkl
+import sys
+from random import seed
+from random import randrange
+from functools import reduce
 
 data_folder = '../data/'
 
+letterCodes = { "A" : 0, "C" : 1, "G" : 2, "T": 3}
+letters = ["A", "C", "G", "T"]
 
-class Utils:
-    def __init__(self):
-        pass
+class Converter:
+    """Utility class to encode kmers as integers and vice versa
 
+    Each letter in a kmer of length k is encoded as two bits as follows
+    "A" : 0, "C" : 1, "G" : 2, "T": 3
+    A string of lenght k is represented as an int with at least k bits. 
+    The most significant bits (position 2*k and 2*k-1 from the right) encode the first letter,
+    the subsequent two bits the second letter and so on.
+    """
+    def __init__(self, k):
+        self.k = k
+        self.mask = 4**k - 1
 
-    def read_raw_file(self, file_name):
-        """
-        docstring
-        """
-        lines = []
-        # opening the CSV file 
-        with open(file_name, mode ='r')as file: 
-            # reading the CSV file 
-            csvFile = csv.reader(file) 
+    def _processNextLetter(self, acc, c):
+        #shift int representation 2 bits to the right
+        #truncate highest 2 bits
+        #encode current letter in the lowest two bits
+        return (acc << 2) & self.mask | letterCodes[c]
 
-            # displaying the contents of the CSV file 
-            for line in csvFile:
-                lines.append(line[1])
+    def kmer2int(self, kmer):
+        return reduce(self._processNextLetter, kmer, 0)
 
-            return lines[1:]
+    def int2kmer(self, intRepr):
+        return "".join(letters[(intRepr >> (2 * i)) & 3] for i in range(self.k - 1, -1, -1))
 
-
-    def read_mat_file(self, file_name):
-        """
-        docstring
-        """
-        df = pd.read_csv(file_name, header=None, delimiter=r"\s+")
-        return list(df.values)
-
-
-    def read_x_data(self, train=True, raw=True):
-        """
-            Read the 3 files in raw/matrix format for train/test, depending on the flags(raw,train)
-        """
-        x_data = list([])
-        raw_or_prep = '' if raw==True else '_mat100'
-        tr_or_test = 'tr' if train==True else 'te'
-
-        for k in range(0,3):
-            x_file_name = '{}X{}{}{}.csv'.format(data_folder, tr_or_test, k, raw_or_prep)
-            if raw == False:
-                x_data_k = self.read_mat_file(x_file_name)
-            else:
-                x_data_k = self.read_raw_file(x_file_name)
-
-            x_data = x_data+x_data_k
-        return x_data
-
-
-    def read_y_data(self):
-        """
-            Read the labels from all 3 files as a list of integers.
-            Keep '1' as 1
-            Transform '0' in -1
-        """
-        y_train = []
-
-        for k in range(0,3):
-            y_file = '{}Ytr{}.csv'.format(data_folder, k)
-            y_train_k = pd.read_csv(y_file, delimiter=r"\s+")
-            y_train_k = list(y_train_k.values)
-
-            # Convert '0's into '1's
-            y_train_k = [-1 if x == '0' else 1 for x in y_train_k]
-
-            # Append the content of the current file to 'y_train'
-            y_train.extend(y_train_k)
+    def all_kmers_as_ints(self, read):
+        """Encodes all kmers of length k in a read as integers
         
-        return y_train
+        Example for k = 2: "ACGT" would be result [01, 12, 23] (the numbers are written in base 4).
+        Returns a lazy evaluated iterator.
+        """
 
+        first_int = self.kmer2int(read[i] for i in range(self.k))  #representation of the first k letters
+        return scanl(self._processNextLetter, first_int, (read[i] for i in range(self.k, len(read))))  
+
+
+#Similar to Haskell's scanl
+def scanl(f, z, xs):
+    yield z
+    for x in xs:
+        z = f(z, x)
+        yield z
+
+
+def read_raw_file(file_name):
+    """
+    docstring
+    """
+    lines = []
+    # opening the CSV file 
+    with open(file_name, mode ='r')as file: 
+        # reading the CSV file 
+        csvFile = csv.reader(file) 
+
+        # displaying the contents of the CSV file 
+        for line in csvFile:
+            lines.append(line[1])
+
+        return lines[1:]
+
+
+def read_mat_file(file_name):
+    """
+    docstring
+    """
+    df = pd.read_csv(file_name, header=None, delimiter=r"\s+")
+    return list(df.values)
+
+
+def read_x_data(train=True, raw=True):
+    """
+        Read the 3 files in raw/matrix format for train/test, depending on the flags(raw,train)
+    """
+    x_data = list([])
+    raw_or_prep = '' if raw==True else '_mat100'
+    tr_or_test = 'tr' if train==True else 'te'
+
+    for k in range(0,3):
+        x_file_name = '{}X{}{}{}.csv'.format(data_folder, tr_or_test, k, raw_or_prep)
+        if raw == False:
+            x_data_k = read_mat_file(x_file_name)
+        else:
+            x_data_k = read_raw_file(x_file_name)
+
+        x_data.append(x_data_k)
+    return x_data
+
+
+def read_y_data():
+    """
+        Read the labels from all 3 files as a list of integers.
+        Keep '1' as 1
+        Transform '0' in -1
+    """
+    y_train = list([])
+
+    for k in range(0,3):
+        y_file = '{}Ytr{}.csv'.format(data_folder, k)
+        y_train_k = read_raw_file(y_file)
+
+        # Convert '0's into '1's
+        y_train_k = [-1 if x == '0' else 1 for x in y_train_k]
+
+        # Append the content of the current file to 'y_train'
+        y_train.append(y_train_k)
+    
+    return y_train
+
+
+def save_object(obj, name):
+    file_path = '../data/kernel_mat/{}.pkl'.format(name)
+    with open(file_path, 'wb') as output:
+        pkl.dump(obj, output)
+
+
+def load_object(name):
+    file_path = '../data/kernel_mat/{}.pkl'.format(name)
+    try:
+        with open(file_path, 'rb') as pkl_file:
+            read_obj = pkl.load(pkl_file)
+            return read_obj    
+    except IOError:
+        print('File {} does not exist.'.format(file_path))
+        sys.exit()
+
+
+def array_to_labels(elements):
+    """
+        For each element in the list:
+            if element > 0 => replace it with 1
+            if element < 0 => replace it with 0
+    """
+    return [-1 if x < 0 else 1 for x in elements]
+
+
+def k_fold_split(data, folds=4):
+    data_split = list()
+    data_copy = list(data)
+    fold_size = int(len(data) / folds)
+    for i in range(folds):
+        fold = list()
+        while len(fold) < fold_size:
+            index = randrange(len(data_copy))
+            fold.append(data_copy.pop(index))
+        data_split.append(fold)
+    return data_split
+
+
+def accuracy_score(predicted, expected):
+    """
+        Accuracy = #of labels well predicted / #of all labels
+    """
+    count = 0
+
+    for i in range(len(predicted)):
+        if predicted[i] == expected[i]:
+            count += 1
+    return count / len(predicted)
+
+
+def build_kmers_dict(sequences, k):
+    """
+        Function which build a dictionary with all the substrings of length k for
+        each entry in the list of sequences
+    """
+    conv = Converter(k)
+    kmer_dict = {}
+
+    for seq in sequences:
+        # Add each new kmer in the dictionary
+        for kmer in conv.all_kmers_as_ints(seq):
+            kmer_dict[kmer] = 0
+
+    # Save the dictionary in pickle format
+    save_object(kmer_dict, 'kmer_dict_k={}'.format(k))
+
+    return kmer_dict

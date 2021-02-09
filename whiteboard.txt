@@ -1,0 +1,38 @@
+
+
+
+TODOs:
+-implement logistic regression
+-implement SVM
+-check for new methods to represent the data
+-find new kernels(RBF)
+
+Ideas:
+Represent the data as:
+A: 0001
+C: 0010
+T: 0100
+G: 1000
+
+OR
+
+A: [-1,1]
+T: [1,-1]
+C: [-1,-1]
+G: [1, 1]
+
+OR
+
+Kmers
+
+
+
+
+Results:
+
+Lambda = 1
+sigma =     [0.001,              0.01,   0.05,                0.1,                 1]
+Accuracies: [0.3398333333333334, 0.2595, 0.39266666666666666, 0.49266666666666664, 0.5026666666666667]
+
+
+
