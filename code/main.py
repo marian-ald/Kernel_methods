@@ -29,19 +29,22 @@ if __name__ == '__main__':
     x_test = np.array(read_x_data(train=False, raw=True))
 
 
-    # y_train = y_train[1][:400]
-    # x_train = x_train[1][:400]
+    # y_train = y_train[1][:40]
+    # x_train = x_train[1][:40]
 
 
-    # x_test = x_train[100:]
-    # x_train = x_train[:100]
-    # y_test = y_train[100:]
-    # y_train = y_train[:100]
+    # x_test = x_train[10:]
+    # x_train = x_train[:10]
+    # y_test = y_train[10:]
+    # y_train = y_train[:10]
 
 
 
     # Run the KRR using gaussian kernel
     # m.run_KRR(x_train, y_train, x_test)
+
+    # Run the KRR using the spectrum kernel
+    m.run_KRR_spectrum(x_train[distribution], y_train[distribution], x_test[distribution], distribution)
 
     # for i in range(1):
     #     K_spectrum = m.spectrum_matrix(x_train, 7, i)
@@ -49,7 +52,7 @@ if __name__ == '__main__':
     # print(type(y_train[0]))
     # print(y_train[:10])
     # m.train_folds_spectrum(x_train, y_train, 5, 0)
-    # sys.exit()
+    sys.exit()
 
     # Run k-cross validation for KRR+gaussian kernel
     # if distribution != -1:
@@ -79,46 +82,4 @@ if __name__ == '__main__':
     # new_y = krr.predict(x_test)
     # new_y = array_to_labels(new_y)
 
-    # print(new_y[:10])
-    # print(y_train[:10])
 
-    # acc = accuracy_score(new_y, y_test)
-    # print('############################')
-    # print('Accuracy: %.3f' % acc)
-
-    # sys.exit()
-
-
-
-
-
-    # ################################################
-
-    kernel_mat = m.kernel_matrix_training(x_train, partial(m.gaussian_kernel, 0.01))
-    save_object(kernel_mat, 'gaussian_sigma_0.3')
-    
-    kernel_mat_test = m.kernel_matrix_test(x_train, x_test, partial(m.gaussian_kernel, 0.01))
-    # print(kernel_mat)
-    save_object(kernel_mat_test, 'test_gaussian_sigma_0.3')
-    
-    kernel_matrix = load_object('gaussian_sigma_0.3')
-
-    alpha = m.solve_linear_system(kernel_matrix, len(x_train), 0.8, y_train)
-    save_object(alpha, 'alpha_KRR_gaussian_sigma_0.3_lam_0.7')
-
-    alpha = load_object('alpha_KRR_gaussian_sigma_0.3_lam_0.7')
-    # alpha = alpha.reshape(5000,1)
-
-    test_kernel_matrix = load_object('test_gaussian_sigma_0.3')
-
-    pred = m.predict_labels(alpha, np.matrix.transpose(test_kernel_matrix))
-    print(pred[:20])
-
-    pred = array_to_labels(pred, -1)
-
-    print(pred[:20])
-    print(y_train[:20])
-
-
-    a = accuracy_score(pred, y_test)
-    print('Accuracy = {} '.format(a))

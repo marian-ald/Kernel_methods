@@ -212,3 +212,22 @@ def write_labels_csv(labels):
 
         # writing the data rows  
         csvwriter.writerows(rows)
+
+
+def write_labels_csv_KRR_spectrum(labels, file_path, distrib):
+    fields = ['Id', 'Bound']
+
+    rows = []
+
+    for i in range(len(labels)):
+        rows.append([i + distrib * len(labels), labels[i]])
+
+    with open(file_path, 'w') as csvfile:  
+        # creating a csv writer object  
+        csvwriter = csv.writer(csvfile)  
+
+        # writing the fields  
+        csvwriter.writerow(fields)  
+
+        # writing the data rows  
+        csvwriter.writerows(rows)

@@ -162,6 +162,9 @@ class Models(object):
 
 
     def run_KRR(self, x_train, y_train, x_test):
+        """
+            KRR with gaussian kernel
+        """
         test_labels = []
         for i in range(3):
             # Compute alpha coefficients using the training set
@@ -175,6 +178,28 @@ class Models(object):
             test_labels = test_labels + labels
 
             write_labels_csv(test_labels)
+
+
+    def run_KRR_spectrum(self, x_train, y_train, x_test, distrib):
+        kernel_func = partial(np.dot)
+        histograms_X_train = self.spectrum_histogram(x_train, x_train, 7, distrib)
+        gram_matrix = self.kernel_matrix_training(histograms_X_train, kernel_func)
+
+        # Solve the linear system in order to find the vector weights
+        alpha = self.solve_linear_system(gram_matrix, len(x_train), 0.1, y_train)
+        alpha = alpha.reshape(len(x_train),1)
+
+        # Build the Gram matrix for the test data
+        histograms_X_test = self.spectrum_histogram(x_train, x_test, 7, distrib)
+        gram_mat_test = self.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
+
+        # Compute predictions over the test data
+        pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
+
+        # Convert predictions to labels
+        pred = array_to_labels(pred, 0)
+
+        write_labels_csv_KRR_spectrum(pred, 'test_results_distribution={}.csv'.format(distrib), distrib)
 
 
     def do_predictions(self, train_x, train_y, test_x, alpha, kernel):
