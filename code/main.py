@@ -29,40 +29,41 @@ if __name__ == '__main__':
     x_test = np.array(read_x_data(train=False, raw=True))
 
 
-    y_train = y_train[0][:100]
-    x_train = x_train[0][:100]
+    # y_train = y_train[1][:400]
+    # x_train = x_train[1][:400]
 
 
-    x_test = x_train[70:]
-    x_train = x_train[:70]
-    y_test = y_train[70:]
-    y_train = y_train[:70]
+    # x_test = x_train[100:]
+    # x_train = x_train[:100]
+    # y_test = y_train[100:]
+    # y_train = y_train[:100]
 
 
 
     # Run the KRR using gaussian kernel
     # m.run_KRR(x_train, y_train, x_test)
 
-    for i in range(1):
-        K_spectrum = m.spectrum_matrix(x_train, 7, i)
+    # for i in range(1):
+    #     K_spectrum = m.spectrum_matrix(x_train, 7, i)
+    # m.train_folds_spectrum(x_train, y_train, 5)
+    # print(type(y_train[0]))
+    # print(y_train[:10])
+    # m.train_folds_spectrum(x_train, y_train, 5, 0)
+    # sys.exit()
 
-    sys.exit()
+    # Run k-cross validation for KRR+gaussian kernel
+    # if distribution != -1:
+    #     m.train_folds(x_train[distribution], y_train[distribution], 5)
+    # else:
+    #     for i in range(3):
+    #         m.train_folds(x_train[i], y_train[i], 5)
 
-
+    # Run k-cross validation for KRR+spectrum kernel
     if distribution != -1:
-        m.train_folds(x_train[distribution], y_train[distribution], 5)
+        m.train_folds_spectrum(x_train[distribution], y_train[distribution], 5, distribution)
     else:
         for i in range(3):
-            m.train_folds(x_train[i], y_train[i], 5)
-
-
-    # random.seed(2)
-    # random.shuffle(x_train)
-    # random.seed(2)
-    # random.shuffle(y_train)
-
-
-
+            m.train_folds_spectrum(x_train[i], y_train[i], 5, distribution)
 
 
 

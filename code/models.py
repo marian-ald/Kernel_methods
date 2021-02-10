@@ -51,9 +51,14 @@ class Models(object):
 
 
 
-    def spectrum_histogram(self, X, k, distribution):
+    def spectrum_histogram(self, X1, X2, k, distribution):
+        """
+            X1 - second list of sequences(train)
+            X2 - first list of sequences(train/test)
+            k - length of the substring
+        """
         # Build the kmers dictionary for the training sequences
-        kmer_dict = build_kmers_dict(X, k, distribution)
+        kmer_dict = build_kmers_dict(X1, k, distribution)
 
         # Or load the kmers dictionary if computed before
         # kmer_dict = load_object('kmer_dict_k={}'.format(k))
@@ -63,33 +68,35 @@ class Models(object):
         # List which stores the kmers frequencies for each sequence
         histogram_X = []
 
-        for seq in X:
+        for seq in X2:
             # Set all values in the dictionary to 0
             kmer_dict = dict.fromkeys(kmer_dict, 0)
 
             # For each kmer in the current seq, increment its occurence nb in the frequency dictionary
             for kmer in conv.all_kmers_as_ints(seq):
-                kmer_dict[kmer] += 1
+                
+                # Check especially 
+                if kmer in kmer_dict:
+                    kmer_dict[kmer] += 1
 
             # Get a snapshot of the kmer_dic and insert as a list of kmer frequencies in the histogram
             histogram_X.append(list(kmer_dict.values()))
 
         save_object(histogram_X, 'spectrum_histogram_distrib={}_k={}'.format(distribution, k))
-        return histogram_X
+        return np.array(histogram_X)
 
 
     def spectrum_matrix(self, X, k, distribution):
         """
             Compute the spectrum kernel for a list of sequences X.
-            X can be omitted(with []) if the spectrum histogram was computed before
         """
         histograms_X = []
 
-        if len(X) == 0:
-            histograms_X = load_object('spectrum_histogram_distrib={}_k={}'.format(distribution, k))
-        else:
-            print('Computing the spectrum histogram')
-            histograms_X = self.spectrum_histogram(X, k, distribution)
+        # if len(X) == 0:
+        #     histograms_X = load_object('spectrum_histogram_distrib={}_k={}'.format(distribution, k))
+        # else:
+        print('Computing the spectrum histogram')
+        histograms_X = self.spectrum_histogram(X, k, distribution)
 
         K = self.kernel_matrix_training(histograms_X, partial(np.dot))
 
@@ -158,13 +165,13 @@ class Models(object):
         test_labels = []
         for i in range(3):
             # Compute alpha coefficients using the training set
-            alpha = m.compute_alpha_KRR(x_train[i], y_train[i], 0.001, 0.1, i)
+            alpha = self.compute_alpha_KRR(x_train[i], y_train[i], 0.001, 0.1, i)
             
             # Define the gaussian kernel
-            kernel = partial(m.gaussian_kernel, 0.1)
+            kernel = partial(self.gaussian_kernel, 0.1)
             
             # Predict the labels over the test set
-            labels = m.do_predictions(x_train[i], y_train[i], x_test[i], alpha, kernel)
+            labels = self.do_predictions(x_train[i], y_train[i], x_test[i], alpha, kernel)
             test_labels = test_labels + labels
 
             write_labels_csv(test_labels)
@@ -242,6 +249,77 @@ class Models(object):
 
             print('lambda={}'.format(lam))
             print('For the sigma values: {}'.format(sigma_values))
+            print('Accuracies: {}\n'.format(accuracy_values))
+
+
+    def train_folds_spectrum(self, data, labels, folds, distribution):
+        """
+        docstring
+        """
+
+        len_data = len(data)
+        data = np.array(list(zip(data, labels)))
+        len_fold = int(len(data) / folds)
+
+        lambda_values = [0.001, 0.01, 0.1, 0.9]
+        k_values = [8,9,10,11,12,13, 14]
+
+        for lam in lambda_values:
+            accuracy_values = []
+            
+            # Build a partial gaussian function with the current 'sigma' value
+            kernel_func = partial(np.dot)
+
+            for k in k_values:
+            
+                # TODO Compute the whole gram matrix here only once
+                # each fold will extract
+
+                fold_accuracy = 0
+                for i in range(folds):
+                    # print('Fold: {}'.format(i))
+                    # Training data is obtained by concatenating the 2 subsets: at the right + at the left
+                    # of the current fold
+                    train_data = [*data[0:i*len_fold], *data[(i+1)*len_fold:len_data]]
+
+                    # The current fold is used to test the model
+                    test_data = [*data[i*len_fold:(i+1)*len_fold]]
+                    
+                    x_train = np.array([x[0] for x in train_data])
+                    y_train = np.array([x[1] for x in train_data])
+
+                    x_test = np.array([x[0] for x in test_data])
+                    y_test = np.array([x[1] for x in test_data])
+
+                    y_test = y_test.astype(np.int64)
+                    y_train = y_train.astype(np.int64)
+
+                    # Build the Gram matrix for the spectrum kernel
+                    histograms_X_train = self.spectrum_histogram(x_train, x_train, k, distribution)
+                    gram_matrix = self.kernel_matrix_training(histograms_X_train, kernel_func)
+
+                    # Solve the linear system in order to find the vector weights
+                    alpha = self.solve_linear_system(gram_matrix, len(x_train), lam, y_train)
+                    alpha = alpha.reshape(len(x_train),1)
+
+                    # Build the Gram matrix for the test data
+                    histograms_X_test = self.spectrum_histogram(x_train, x_test, k, distribution)
+                    gram_mat_test = self.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
+
+                    # Compute predictions over the test data
+                    pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
+
+                    # Convert predictions to labels
+                    pred = array_to_labels(pred, -1)
+
+                    fold_accuracy += accuracy_score(pred, y_test)
+                
+                # Compute average accuracy for all folds
+                average_accuracy = fold_accuracy / folds
+                accuracy_values.append(average_accuracy)
+
+            print('lambda={}'.format(lam))
+            print('For the k values: {}'.format(k_values))
             print('Accuracies: {}\n'.format(accuracy_values))
 
 
