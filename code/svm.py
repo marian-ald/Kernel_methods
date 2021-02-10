@@ -20,7 +20,7 @@ class SupportVectorMachine(object):
     C: float
         Penalty term.
     """
-    def __init__(self, C=1, kernel_matrix):
+    def __init__(self, kernel_matrix, C=1):
         self.C = C
         self.lagr_multipliers = None
         self.support_vectors = None
@@ -31,11 +31,7 @@ class SupportVectorMachine(object):
     def fit(self, X, y):
 
         n_samples, n_features = np.shape(X)
-
-        # Set gamma to 1/n_features by default
-        if not self.gamma:
-            self.gamma = 1 / n_features
-
+        
         # Define the quadratic optimization problem
         P = cvxopt.matrix(np.outer(y, y) * self.kernel_matrix, tc='d')
         q = cvxopt.matrix(np.ones(n_samples) * -1)
@@ -90,13 +86,25 @@ class SupportVectorMachine(object):
     
 
 def main():
-
-    test_kernel_matrix = load_object('test_gaussian_sigma_0.3')
-
-    model = SupportVectorMachine(C=1, test_kernel_matrix)
+    x_train = np.array(read_x_data(train=True, raw=False))
+    y_train = np.array(read_y_data())
+    x_test = np.array(read_x_data(train=False, raw=False))
     
+    x_train = x_train[0]
+    y_train = y_train[0]
+    x_test = x_test[0]
     
+    m = Models()
 
+    test_kernel_matrix = m.spectrum_kernel(x_train, 2)
+
+    model = SupportVectorMachine(test_kernel_matrix, 1)
+    
+    model.fit(x_train, y_train)
+    
+    predicted_value = model.predict(x_test)
+    
+    print(predicted_value)
 
 if __name__ == "__main__":
     main()
