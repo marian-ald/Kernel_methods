@@ -185,6 +185,8 @@ class Models(object):
         histograms_X_train = self.spectrum_histogram(x_train, x_train, 7, distrib)
         gram_matrix = self.kernel_matrix_training(histograms_X_train, kernel_func)
 
+        save_object(gram_matrix, 'spectr_kernel_aug_k=7_train_distrib={}'.format(distrib))
+
         # Solve the linear system in order to find the vector weights
         alpha = self.solve_linear_system(gram_matrix, len(x_train), 0.1, y_train)
         alpha = alpha.reshape(len(x_train),1)
@@ -192,6 +194,8 @@ class Models(object):
         # Build the Gram matrix for the test data
         histograms_X_test = self.spectrum_histogram(x_train, x_test, 7, distrib)
         gram_mat_test = self.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
+
+        save_object(gram_matrix, 'spectr_kernel_aug_k=7_test_distrib={}'.format(distrib))
 
         # Compute predictions over the test data
         pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
@@ -346,13 +350,3 @@ class Models(object):
             print('lambda={}'.format(lam))
             print('For the k values: {}'.format(k_values))
             print('Accuracies: {}\n'.format(accuracy_values))
-
-
-    def run_and_save_kernels(self, train):
-
-        kernel_mat = self.kernel_matrix_training(train, partial(self.mismatch_kernel, 8, 1, 1, 1))
-        save_object(kernel_mat, 'mismatch_k=8_delta=1_m=1_gamma=1')
-
-        kernel_mat = self.kernel_matrix_training(train, partial(self.mismatch_kernel, 7, 1, 1, 1))
-        save_object(kernel_mat, 'mismatch_k=7_delta=1_m=1_gamma=1')
-

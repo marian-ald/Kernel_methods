@@ -28,16 +28,7 @@ if __name__ == '__main__':
     y_train = np.array(read_y_data())
     x_test = np.array(read_x_data(train=False, raw=True))
 
-
-    # y_train = y_train[1][:40]
-    # x_train = x_train[1][:40]
-
-
-    # x_test = x_train[10:]
-    # x_train = x_train[:10]
-    # y_test = y_train[10:]
-    # y_train = y_train[:10]
-
+    x_train, y_train = augment_data(x_train, y_train)
 
 
     # Run the KRR using gaussian kernel

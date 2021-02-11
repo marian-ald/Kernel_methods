@@ -194,6 +194,27 @@ def build_kmers_dict(sequences, k, distribution):
     return kmer_dict
 
 
+def augment_data(train_x, train_y):
+    all_new_train_x = []
+    all_new_train_y = []
+    nucleotide_dic = {'A':'T', 'T':'A', 'C':'G', 'G':'C'}
+
+    for i in range(len(train_x)): # range(3) 
+        new_train_x = []
+        new_train_y = []
+        for seq_i in range(len(train_x[i])):
+            new_seq = list(map(lambda x: nucleotide_dic[x], train_x[i][seq_i]))
+            new_seq = ''.join(new_seq)
+
+            new_train_x.append(train_x[i][seq_i])
+            new_train_x.append(new_seq)
+            new_train_y.append(train_y[i][seq_i])
+            new_train_y.append(train_y[i][seq_i])
+        all_new_train_x.append(new_train_x)
+        all_new_train_y.append(new_train_y)
+
+    return [all_new_train_x, all_new_train_y]
+
 def write_labels_csv(labels):
     fields = ['Id', 'Bound']
     filename = 'test_results.csv'
@@ -231,3 +252,4 @@ def write_labels_csv_KRR_spectrum(labels, file_path, distrib):
 
         # writing the data rows  
         csvwriter.writerows(rows)
+
