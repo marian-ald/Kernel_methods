@@ -72,6 +72,7 @@ class C_SVM():
         self.K_fit = self.K
         self.y_fit = y
         self.n = self.K_fit.shape[0]
+        print('n is {}'.format(self.n))
 
         if self.solver == 'BFGS':
             # initialization
@@ -86,6 +87,10 @@ class C_SVM():
             r, o, z = np.arange(self.n), np.ones(self.n), np.zeros(self.n)
             P = cvxopt.matrix(self.K_fit.astype(float), tc='d')
             q = cvxopt.matrix(-self.y_fit, tc='d')
+            # print(' 1 {}'.format(len(np.r_[self.y_fit, -self.y_fit])))
+            # print(' 2 {}'.format(len(np.r_[r, r + self.n])))
+            # print(' 3 {}'.format(len(np.r_[r, r])))
+
             G = cvxopt.spmatrix(np.r_[self.y_fit, -self.y_fit], np.r_[r, r + self.n], np.r_[r, r], tc='d')
             h = cvxopt.matrix(np.r_[o * self.C, z], tc='d')
             cvxopt.solvers.options['show_progress'] = False
@@ -116,16 +121,25 @@ class C_SVM():
         return np.array(pred)
 
 def main():
+    distribution = -1
+
+    # Check if a certain dataset is selected, if no argument is provided, all 3
+    # will be processed
+    if len(sys.argv) > 1:
+        if not(sys.argv[1] == '0' or sys.argv[1] == '1' or sys.argv[1] == '2'):
+            sys.exit('Error: Expected arguments:0/1/2')
+        distribution = int(sys.argv[1])
+        print('Processing distribution: {}'.format(distribution))
+
     m = Models()
 
     x_train = np.array(read_x_data(train=True, raw=True))
     y_train = np.array(read_y_data())
     x_test = np.array(read_x_data(train=False, raw=True))
 
-    x_train[0] = x_train[0][:2]
-    # x_train = x_train[0]
-    # y_train = y_train[0]
-    # x_test = x_test[0]
+    # x_train = x_train[1]
+    # y_train = y_train[1]
+    # x_test = x_test[1]
     
     # x_train = x_train[:1000]
     # y_train = y_train[:1000]
@@ -140,33 +154,38 @@ def main():
     # Build a partial spectrum function
     kernel_func = partial(np.dot)
 
+    all_labels = []
+
+    
     # Build the Gram matrix for the spectrum kernel
-    # histograms_X_train = m.spectrum_histogram(x_train, x_train, 7, 0)
-    # gram_matrix_train = m.kernel_matrix_training(histograms_X_train, kernel_func)
+    histograms_X_train = m.spectrum_histogram(x_train[distribution], x_train[distribution], 8, 0)
+    gram_matrix_train = m.kernel_matrix_training(histograms_X_train, kernel_func)
 
 
     # Build the Gram matrix for the test data
-    # histograms_X_test = m.spectrum_histogram(x_train, x_test, 7, 0)
-    # gram_mat_test = m.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
+    histograms_X_test = m.spectrum_histogram(x_train[distribution], x_test[distribution], 8, 0)
+    gram_mat_test = m.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
 
-    all_labels = []
 
-    for distrib in range(3):
-        gram_matrix_train = load_object('spectr_kernel_aug_k=7_train_distrib={}'.format(distrib))
-        gram_mat_test = load_object('spectr_kernel_aug_k=7_test_distrib={}'.format(distrib))
+    # gram_matrix_train = load_object('spectr_kernel_aug_k=7_train_distrib={}'.format(distrib))
+    # gram_mat_test = load_object('spectr_kernel_aug_k=7_test_distrib={}'.format(distrib))
 
-        model = C_SVM(gram_matrix_train, 1)
+    model = C_SVM(gram_matrix_train, 1)
 
-        model.fit(x_train[distrib], y_train[distrib])
+    model.fit(x_train[distribution], y_train[distribution])
 
-        predicted_values = model.predict(gram_mat_test)
-        
-        all_labels += list(predicted_values)
+    predicted_values = list(model.predict(gram_mat_test))
+    
+    all_labels += list(predicted_values)
 
-        # print('accuracy = {}'.format(np.mean(y_test[0] == predicted_value)))
-    save_object(all_labels, 'labels_svm.pkl')
-    all_labels = [0 if x == -1 else 1 for x in all_labels]
-    write_labels_csv(all_labels)
+    predicted_values = [0 if x == -1 else 1 for x in predicted_values]
+
+    # print('accuracy = {}'.format(np.mean(y_test == predicted_values)))
+    write_labels_csv_KRR_spectrum(predicted_values, 'test_results_SVM_spectr_distribution={}.csv'.format(distribution), distribution)
+
+    # save_object(all_labels, 'labels_svm.pkl')
+    # all_labels = [0 if x == -1 else 1 for x in all_labels]
+    # write_labels_csv(all_labels)
 
 
 if __name__ == "__main__":
