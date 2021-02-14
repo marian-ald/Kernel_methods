@@ -1,13 +1,28 @@
 
 Results:
 
+Test set:
+KRR + gaussian kernel(sima=0.1, lambda=0.001): acc = 0.63
+
+KRR + spectrum kernel(k=7, lambda=0.1): acc=0.6853
+KRR + spectrum kernel + data augmentation(k=7, lambda=0.1): acc=0.664
+KRR + spectrum kernel(k=7, lambda=0.01): acc=0.65
+KRR + spectrum kernel(k=7, lambda=0.1): acc=0.6853
+KRR + spectrum kernel(k=8, lambda=0.1): acc=0.6633
+
+CSVM + spectrum kernel: acc=0.66
+
+
+
+
 __________________________________KRR- cross validation__________________________________
 
 
-Gaussian Kernel
+_______________Gaussian Kernel
+
 Find lambda and sigma
 
-Processing distribution: 0
+____________________________distribution: 0
 lambda=0.0001
 For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
 Accuracies: [0.5015000000000001, 0.5015000000000001, 0.5405, 0.5625, 0.5655]
@@ -38,7 +53,7 @@ Accuracies: [0.501501, 0.501501, 0.541, 0.526, 0.4805]
 
 
 
-Processing distribution: 1
+____________________________distribution: 1
 lambda=0.0001
 For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
 Accuracies: [0.5075000000000001, 0.5075000000000001, 0.6035, 0.6705000000000001, 0.6759999999999999]
@@ -69,7 +84,7 @@ Accuracies: [0.507501, 0.507501, 0.6035, 0.637, 0.51348]
 
 
 
-Processing distribution: 2
+____________________________distribution: 2
 lambda=0.0001
 For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
 Accuracies: [0.5, 0.507, 0.6075000000000002, 0.6765000000000001, 0.6575]
@@ -97,3 +112,90 @@ Accuracies: [0.5, 0.507, 0.607502, 0.6405, 0.4944]
 lambda=0.9
 For the sigma values: [0.0001, 0.001, 0.01, 0.1, 0.5]
 Accuracies: [0.5, 0.507, 0.607502, 0.640501, 0.4945005]
+
+
+
+
+
+________________________________________Spectrum Kernel KRR
+
+____________________________Distribution 0
+lambda=0.001
+For the k values: [8, 11, 14]
+Accuracies: [0.64, 0.5904999999999999, 0.568]
+For the k values: [7, 9]
+Accuracies: [0.624, 0.6315]
+
+lambda=0.01
+For the k values: [8, 11, 14]
+Accuracies: [0.6395000000000001, 0.591, 0.5685]
+For the k values: [7, 9]
+Accuracies: [0.6285, 0.6325]
+
+lambda=0.1
+For the k values: [8, 11, 14]
+Accuracies: [0.638, 0.5900000000000001, 0.5685]
+For the k values: [7, 9]
+Accuracies: [0.637, 0.623]
+
+lambda=0.9
+For the k values: [8, 11, 14]
+Accuracies: [0.6295, 0.5885, 0.568]
+For the k values: [7, 9]
+Accuracies: [0.634, 0.6144999999999999]
+
+
+____________________________Distribution 1
+lambda=0.001
+For the k values: [8, 11, 14]
+Accuracies: [0.6920000000000001, 0.6519999999999999, 0.64]
+For the k values: [7, 9]
+Accuracies: [0.6849999999999999, 0.68]
+
+lambda=0.01
+For the k values: [8, 11, 14]
+Accuracies: [0.6945, 0.6525000000000001, 0.641]
+For the k values: [7, 9]
+Accuracies: [0.6955, 0.6875]
+
+lambda=0.1
+For the k values: [8, 11, 14]
+Accuracies: [0.6925, 0.656, 0.642]
+For the k values: [7, 9]
+Accuracies: [0.7, 0.688]
+
+lambda=0.9
+For the k values: [8, 11, 14]
+Accuracies: [0.6889999999999998, 0.6535, 0.642]
+For the k values: [7, 9]
+Accuracies: [0.7184999999999999, 0.6860000000000002]
+
+
+
+
+____________________________Distribution 2
+lambda=0.001
+For the k values: [8, 11, 14]
+Accuracies: [0.6785, 0.666, 0.5940000000000001]
+For the k values: [7, 9]
+Accuracies: [0.665, 0.6775]
+
+lambda=0.01
+For the k values: [8, 11, 14]
+Accuracies: [0.681, 0.6635000000000001, 0.5945]
+For the k values: [7, 9]
+Accuracies: [0.6785000000000001, 0.685]
+
+lambda=0.1
+For the k values: [8, 11, 14]
+Accuracies: [0.7015, 0.6679999999999999, 0.594]
+For the k values: [7, 9]
+Accuracies: [0.7025, 0.6859999999999999]
+
+lambda=0.9
+For the k values: [8, 11, 14]
+Accuracies: [0.6965, 0.666, 0.5945]
+For the k values: [7, 9]
+Accuracies: [0.6904999999999999, 0.6
+
+
