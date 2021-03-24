@@ -1,4 +1,4 @@
-# Kernel_methods
+# Kernel methods
 
 In this project we apply different kernel methods on a biological task.
 Some kernel techinques used are:
