@@ -233,6 +233,24 @@ def write_labels_csv(labels):
 
         # writing the data rows  
         csvwriter.writerows(rows)
+        
+def write_predicted_labels_csv(labels, filename='Yte.csv'):
+    fields = ['Id', 'Bound']
+
+    rows = []
+
+    for i in range(len(labels)):
+        rows.append([i, labels[i]])
+
+    with open(filename, 'w') as csvfile:  
+        # creating a csv writer object  
+        csvwriter = csv.writer(csvfile)  
+
+        # writing the fields  
+        csvwriter.writerow(fields)  
+
+        # writing the data rows  
+        csvwriter.writerows(rows)
 
 
 def write_labels_csv_KRR_spectrum(labels, file_path, distrib):

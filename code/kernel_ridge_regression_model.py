@@ -1,133 +1,15 @@
-import numpy as np
 from functools import partial
+import numpy as np
 from utils import *
-import itertools as it
+import kernels
 
+"""
+    This class implements Kernel Ridge Regression
+"""
 
-class Models(object):
-    """
-    docstring
-    """
+class Kernel_ridge_regression_model(object):
     def __init__(self):
         pass
-    
-    def gaussian_kernel(self, sigma, x1, x2):
-        return np.exp(-0.5 * (np.linalg.norm(x1 - x2) ** 2) / sigma**2) #/ (sigma * np.sqrt(2*np.pi))
-
-
-    def miss(self, s, t):
-        """ Count the number of mismatches between two strings."""
-        return sum((si != sj for si, sj in zip(s, t)))
-
-
-    def mismatch_kernel(self, k, delta, m, gamma, s, t):
-        """ String kernel with displacement, mismatches and exponential decay. """
-        L = len(s)
-        return sum(((np.exp(-gamma * d**2) \
-                    * np.exp(-gamma * self.miss(s[i:i + k], t[d + i:d + i + k])) \
-                    * (self.miss(s[i:i + k], t[d + i:d + i + k]) <= m) 
-                    for i, d in it.product(range(L - k + 1), range(-delta, delta + 1))
-                    if i + d + k <= L and i + d >= 0)))
-
-
-    def poly_kernel(self, power, x1, x2):
-        """
-        polynominal function
-        k(x1,x2) = (1+x1 * x2) ^i
-        """
-        return pow((1 + np.dot(x1, x2)), power)
-
-
-    def rbf_kernel(self, x1, x2, gamma = 1):
-        '''
-        RBF: Radial basis function or guassian kernel
-        ----------------------------------------------
-        :param: x1: NxD transposed feature space
-        :param: x2: NxD feature space
-        :param: gamma: 1/2(sigma-square)
-        :return type: kernel(Gram) matrix
-        '''
-        return np.exp(-gamma * np.linalg.norm(x1[:, np.newaxis] - x2[np.newaxis, :], axis = 2)**2)
-
-
-
-    def spectrum_histogram(self, X1, X2, k, distribution):
-        """
-            X1 - second list of sequences(train)
-            X2 - first list of sequences(train/test)
-            k - length of the substring
-        """
-        # Build the kmers dictionary for the training sequences
-        kmer_dict = build_kmers_dict(X1, k, distribution)
-
-        # Or load the kmers dictionary if computed before
-        # kmer_dict = load_object('kmer_dict_k={}'.format(k))
-
-        conv = Converter(k)
-
-        # List which stores the kmers frequencies for each sequence
-        histogram_X = []
-
-        for seq in X2:
-            # Set all values in the dictionary to 0
-            kmer_dict = dict.fromkeys(kmer_dict, 0)
-
-            # For each kmer in the current seq, increment its occurence nb in the frequency dictionary
-            for kmer in conv.all_kmers_as_ints(seq):
-                
-                # Check especially 
-                if kmer in kmer_dict:
-                    kmer_dict[kmer] += 1
-
-            # Get a snapshot of the kmer_dic and insert as a list of kmer frequencies in the histogram
-            histogram_X.append(list(kmer_dict.values()))
-
-        save_object(histogram_X, 'spectrum_histogram_distrib={}_k={}'.format(distribution, k))
-        return np.array(histogram_X)
-
-
-    def spectrum_matrix(self, X, k, distribution):
-        """
-            Compute the spectrum kernel for a list of sequences X.
-        """
-        histograms_X = []
-
-        # if len(X) == 0:
-        #     histograms_X = load_object('spectrum_histogram_distrib={}_k={}'.format(distribution, k))
-        # else:
-        print('Computing the spectrum histogram')
-        histograms_X = self.spectrum_histogram(X, k, distribution)
-
-        K = self.kernel_matrix_training(histograms_X, partial(np.dot))
-
-        save_object(K, 'spectrum_kernel_distribution={}_k={}'.format(distribution, k))
-        return K
-
-
-    def kernel_matrix_training(self, X, kernel):
-        """ 
-            Compute the kernel matrix for the training data.
-        """
-        X_count = len(X)
-
-        K = np.zeros((X_count, X_count))
-        for i in range(X_count):
-            K[i,i] = kernel(X[i], X[i])
-
-        for i, j in it.combinations(range(X_count), 2):
-            K[i,j] = K[j,i] = kernel(X[i], X[j])
-        return K
-
-
-    def kernel_matrix_test(self, X1, X2, kernel):
-        X1_count = X1.shape[0]
-        X2_count = X2.shape[0]
-        
-        K = np.zeros((X1_count, X2_count))
-        for i in range(X1_count):
-            for j in range(X2_count):
-                K[i,j] = kernel(X1[i], X2[j])
-        return K
 
 
     def solve_linear_system(self, K, n, lam, y):
@@ -182,8 +64,8 @@ class Models(object):
 
     def run_KRR_spectrum(self, x_train, y_train, x_test, distrib):
         kernel_func = partial(np.dot)
-        histograms_X_train = self.spectrum_histogram(x_train, x_train, 7, distrib)
-        gram_matrix = self.kernel_matrix_training(histograms_X_train, kernel_func)
+        histograms_X_train = kernels.spectrum_histogram(x_train, x_train, 7, distrib)
+        gram_matrix = kernels.kernel_matrix_training(histograms_X_train, kernel_func)
 
         save_object(gram_matrix, 'spectr_kernel_aug_k=7_train_distrib={}'.format(distrib))
 
@@ -192,8 +74,8 @@ class Models(object):
         alpha = alpha.reshape(len(x_train),1)
 
         # Build the Gram matrix for the test data
-        histograms_X_test = self.spectrum_histogram(x_train, x_test, 7, distrib)
-        gram_mat_test = self.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
+        histograms_X_test = kernels.spectrum_histogram(x_train, x_test, 7, distrib)
+        gram_mat_test = kernels.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
 
         save_object(gram_matrix, 'spectr_kernel_aug_k=7_test_distrib={}'.format(distrib))
 
@@ -203,13 +85,12 @@ class Models(object):
         # Convert predictions to labels
         pred = array_to_labels(pred, 0)
 
-        write_labels_csv_KRR_spectrum(pred, 'test_results_distribution={}.csv'.format(distrib), distrib)
-
+        return pred
 
     def do_predictions(self, train_x, train_y, test_x, alpha, kernel):
 
         # Compute test Gram matrix
-        K_test = self.kernel_matrix_test(train_x, test_x, kernel)
+        K_test = kernels.kernel_matrix_test(train_x, test_x, kernel)
         labels = self.predict_labels(alpha, np.matrix.transpose(K_test))
 
         labels = array_to_labels(labels, 0)
@@ -255,14 +136,14 @@ class Models(object):
                     y_test = np.array([x[1] for x in test_data])
 
                     # Build the Gram matrix
-                    gram_matrix = self.kernel_matrix_training(x_train, kernel_func)
+                    gram_matrix = kernels.kernel_matrix_training(x_train, kernel_func)
 
                     # Solve the linear system in order to find the vector weights
                     alpha = self.solve_linear_system(gram_matrix, len(x_train), lam, y_train)
                     alpha = alpha.reshape(len(x_train),1)
 
                     # Build the Gram matrix for the test data
-                    gram_mat_test = self.kernel_matrix_test(x_train, x_test, kernel_func)
+                    gram_mat_test = kernels.kernel_matrix_test(x_train, x_test, kernel_func)
 
                     # Compute predictions over the test data
                     pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
@@ -324,16 +205,16 @@ class Models(object):
                     y_train = y_train.astype(np.int64)
 
                     # Build the Gram matrix for the spectrum kernel
-                    histograms_X_train = self.spectrum_histogram(x_train, x_train, k, distribution)
-                    gram_matrix = self.kernel_matrix_training(histograms_X_train, kernel_func)
+                    histograms_X_train = kernels.spectrum_histogram(x_train, x_train, k, distribution)
+                    gram_matrix = kernels.kernel_matrix_training(histograms_X_train, kernel_func)
 
                     # Solve the linear system in order to find the vector weights
                     alpha = self.solve_linear_system(gram_matrix, len(x_train), lam, y_train)
                     alpha = alpha.reshape(len(x_train),1)
 
                     # Build the Gram matrix for the test data
-                    histograms_X_test = self.spectrum_histogram(x_train, x_test, k, distribution)
-                    gram_mat_test = self.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
+                    histograms_X_test = kernels.spectrum_histogram(x_train, x_test, k, distribution)
+                    gram_mat_test = kernels.kernel_matrix_test(histograms_X_train, histograms_X_test, kernel_func)
 
                     # Compute predictions over the test data
                     pred = self.predict_labels(alpha, np.matrix.transpose(gram_mat_test))
